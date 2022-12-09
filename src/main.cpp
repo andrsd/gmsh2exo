@@ -95,34 +95,70 @@ void read_gmsh_file(const std::string &file_name) {
         }
     }
 
-//    std::cout << "elems" << std::endl;
+    std::map<std::vector<int>, std::pair<int, int>> elem_sides;
+
+    std::cout << "elems" << std::endl;
+    unsigned int eid = 0;
     for (const auto &eb: el_blks) {
-//        std::cout << "- dim = " << eb.dimension;
-//        std::cout << ", el_type = " << eb.element_type;
-//        std::cout << ", tag = " << eb.tag;
-//        std::cout << std::endl;
-//        std::cout << "  elems:" << std::endl;
-//        for (const auto &e: eb.elements) {
-//            std::cout << "  - tag = " << e.tag;
-//            std::cout << ", nodes =";
-//            for (const auto &nt: e.node_tags)
-//                std::cout << " " << nt;
-//            std::cout << std::endl;
-//        }
-//        std::cout << std::endl;
+        std::cout << "- dim = " << eb.dimension;
+        std::cout << ", el_type = " << eb.element_type;
+        std::cout << ", tag = " << eb.tag;
+        std::cout << std::endl;
+        std::cout << "  elems:" << std::endl;
+        for (const auto &e: eb.elements) {
+            std::cout << "  - tag = " << e.tag;
+            std::cout << ", nodes =";
+            for (const auto &nt: e.node_tags)
+                std::cout << " " << nt;
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
 
         if (eb.dimension == dim) {
             exodusIIcpp::ElementBlock exo_eb;
             exo_eb.set_id(eb.tag);
             std::vector<int> connect;
-            for (const auto &elem: eb.elements)
-                for (const auto & nid: elem.node_tags)
+            for (const auto & elem: eb.elements) {
+                for (const auto &nid: elem.node_tags)
                     connect.push_back(nid);
+
+                auto n_node_tags = elem.node_tags.size();
+                for (unsigned int i = 0; i < n_node_tags; i++) {
+                    std::vector<int> side_key;
+                    if (dim == 1) {
+                        auto nid1 = elem.node_tags[i];
+                        side_key.push_back(nid1);
+                    }
+                    else if (dim == 2) {
+                        auto nid1 = elem.node_tags[i];
+                        auto nid2 = elem.node_tags[(i + 1) % n_node_tags];
+                        if (nid1 < nid2) {
+                            side_key.push_back(nid1);
+                            side_key.push_back(nid2);
+                        }
+                        else {
+                            side_key.push_back(nid2);
+                            side_key.push_back(nid1);
+                        }
+                    }
+                    else if (dim == 3) {
+                        throw std::runtime_error("not implemented yet");
+                    }
+                    elem_sides[side_key] = std::pair(eid + 1, i + 1);
+                    for (const auto & k: side_key)
+                        std::cerr << " " << k;
+                    std::cerr << " = " << eid + 1 << ", " << i + 1 << std::endl;
+                }
+                eid++;
+            }
             int n_nodes_pre_elem = nodes_per_elem[eb.element_type];
             exo_eb.set_connectivity(exo_elem_type.at(eb.element_type), eb.elements.size(), n_nodes_pre_elem, connect);
             element_blocks.push_back(exo_eb);
         }
-        else if (eb.dimension == side_set_dim) {
+    }
+
+    for (const auto &eb: el_blks) {
+        if (eb.dimension == side_set_dim) {
             // exodusIIcpp::SideSet ss;
             // // FIXME: this should be the tag from the physical entity corresponding to this element block
             // ss.set_id(side_sets.size() + 1);
