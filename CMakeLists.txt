@@ -8,6 +8,8 @@ project(gmsh2exo
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include(FetchContent)
 
@@ -29,7 +31,7 @@ mark_as_advanced(FORCE
 FetchContent_Declare(
     gmshparsercpp
     GIT_REPOSITORY https://github.com/andrsd/gmshparsercpp.git
-    GIT_TAG        v1.0
+    GIT_TAG        v1.1
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
