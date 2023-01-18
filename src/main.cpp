@@ -100,17 +100,8 @@ void build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> &nodes) {
 void build_element_blocks(const std::vector<gmshparsercpp::MshFile::ElementBlock> &el_blks,
                           const std::vector<gmshparsercpp::MshFile::MultiDEntity> &entities) {
     std::map<int, const gmshparsercpp::MshFile::MultiDEntity *> ents_by_id;
-    for (const auto &ent: entities) {
-//        if (!ent.physical_tags.empty()) {
-//            for (const auto &id: ent.physical_tags) {
-//                exodusIIcpp::SideSet ss;
-//                ss.set_id(id);
-//                ss.set_name(phys_ent_by_tag[id]->name);
-//                side_sets[id] = ss;
-//            }
-//        }
+    for (const auto &ent: entities)
         ents_by_id[ent.tag] = &ent;
-    }
 
     unsigned int eid = 0;
     for (const auto &eb: el_blks) {
