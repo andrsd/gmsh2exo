@@ -74,7 +74,7 @@ void analyze_mesh(const std::vector<gmshparsercpp::MshFile::ElementBlock> &el_bl
 
     // the element block with the highest dimension that has something in it will be the final mesh dimension
     for (int i = 0; i < 4; i++)
-        if (el_blk_dim[i].size() > 0)
+        if (!el_blk_dim[i].empty())
             dim = i;
     side_set_dim = dim - 1;
     node_set_dim = 0;
@@ -84,7 +84,7 @@ void build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> &nodes) {
     for (const auto &nd: nodes) {
         if (!nd.tags.empty()) {
             for (int j = 0; j < nd.tags.size(); j++) {
-                int local_id = node_map.size();
+                int local_id = (int) node_map.size();
                 const auto &id = nd.tags[j];
                 node_map[local_id] = id;
 
@@ -118,7 +118,7 @@ void build_element_blocks(const std::vector<gmshparsercpp::MshFile::ElementBlock
             exodusIIcpp::ElementBlock exo_eb;
 
             const auto &ent = ents_by_id[eb.tag];
-            if (ent->physical_tags.size() > 0) {
+            if (!ent->physical_tags.empty()) {
                 auto id = ent->physical_tags[0];
                 exo_eb.set_name(phys_ent_by_tag[id]->name);
                 exo_eb.set_id(id);
@@ -145,7 +145,7 @@ void build_element_blocks(const std::vector<gmshparsercpp::MshFile::ElementBlock
                 eid++;
             }
             int n_nodes_pre_elem = nodes_per_elem[eb.element_type];
-            exo_eb.set_connectivity(exo_elem_type.at(eb.element_type), eb.elements.size(), n_nodes_pre_elem, connect);
+            exo_eb.set_connectivity(exo_elem_type.at(eb.element_type), (int) eb.elements.size(), n_nodes_pre_elem, connect);
             element_blocks.push_back(exo_eb);
         }
     }
@@ -238,7 +238,7 @@ void write_exodus_side_sets(exodusIIcpp::File &f) {
             sideset_names.push_back(ss.get_name());
         }
     }
-    if (sideset_names.size() > 0)
+    if (!sideset_names.empty())
         f.write_side_set_names(sideset_names);
 }
 
@@ -251,20 +251,20 @@ void write_exodus_node_sets(exodusIIcpp::File &f) {
             nodeset_names.push_back(ns.get_name());
         }
     }
-    if (nodeset_names.size() > 0)
+    if (!nodeset_names.empty())
         f.write_node_set_names(nodeset_names);
 }
 
 void write_exodus_file(const std::string &file_name) {
     exodusIIcpp::File f(file_name, exodusIIcpp::FileAccess::WRITE);
 
-    int n_nodes = x.size();
+    int n_nodes = (int) x.size();
     int n_elems = 0;
     for (const auto &eb: element_blocks)
         n_elems += eb.get_num_elements();
-    int n_elem_blks = element_blocks.size();
-    int n_node_sets = node_sets.size();
-    int n_side_sets = side_sets.size();
+    int n_elem_blks = (int) element_blocks.size();
+    int n_node_sets = (int) node_sets.size();
+    int n_side_sets = (int) side_sets.size();
     f.init("", dim, n_nodes, n_elems, n_elem_blks, n_node_sets, n_side_sets);
 
     write_exodus_coordinates(f);
