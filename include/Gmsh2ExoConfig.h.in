@@ -1,0 +1,3 @@
+#pragma once
+
+#define GMSH2EXO_VERSION "@gmsh2exo_VERSION@"
