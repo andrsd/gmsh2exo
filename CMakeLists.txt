@@ -67,7 +67,28 @@ mark_as_advanced(FORCE
     FETCHCONTENT_UPDATES_DISCONNECTED_GOOGLETEST
 )
 
-FetchContent_MakeAvailable(exodusIIcpp gmshparsercpp cxxopts googletest)
+if(EXODUSIICPP_LIBRARY_TYPE STREQUAL "STATIC")
+    FetchContent_GetProperties(exodusIIcpp)
+    if(NOT exodusIIcpp_POPULATED)
+        FetchContent_Populate(exodusIIcpp)
+        add_subdirectory(${exodusIIcpp_SOURCE_DIR} ${exodusIIcpp_BINARY_DIR} EXCLUDE_FROM_ALL)
+    endif()
+else()
+    FetchContent_MakeAvailable(exodusIIcpp)
+endif()
+
+if(GMSHPARSERCPP_LIBRARY_TYPE STREQUAL "STATIC")
+    FetchContent_GetProperties(gmshparsercpp)
+    if(NOT gmshparsercpp_POPULATED)
+        FetchContent_Populate(gmshparsercpp)
+        add_subdirectory(${gmshparsercpp_SOURCE_DIR} ${gmshparsercpp_BINARY_DIR} EXCLUDE_FROM_ALL)
+    endif()
+else()
+    FetchContent_MakeAvailable(gmshparsercpp)
+endif()
+
+FetchContent_MakeAvailable(cxxopts googletest)
+
 mark_as_advanced(FORCE
     FETCHCONTENT_BASE_DIR
     FETCHCONTENT_FULLY_DISCONNECTED
