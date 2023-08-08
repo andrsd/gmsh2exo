@@ -39,11 +39,6 @@ mark_as_advanced(FORCE
     GMSHPARSERCPP_BUILD_TESTS
 )
 
-mark_as_advanced(FORCE
-    FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
-    FETCHCONTENT_UPDATES_DISCONNECTED_GMSHPARSERCPP
-)
-
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
