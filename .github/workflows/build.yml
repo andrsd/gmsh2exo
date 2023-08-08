@@ -54,10 +54,7 @@ jobs:
           cmake -S . -B ${{ github.workspace }}/build \
             -DEXODUSIICPP_LIBRARY_TYPE=STATIC \
             -DGMSHPARSERCPP_LIBRARY_TYPE=STATIC \
-            -DGMSH2EXO_BUILD_TESTS=NO \
-            -DCXXOPTS_BUILD_EXAMPLES=NO \
-            -DCXXOPTS_BUILD_TESTS=NO \
-            -DCXXOPTS_ENABLE_INSTALL=NO
+            -DGMSH2EXO_BUILD_TESTS=NO
 
       - name: Build
         run: make -C ${{ github.workspace }}/build

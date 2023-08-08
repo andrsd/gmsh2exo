@@ -39,19 +39,9 @@ mark_as_advanced(FORCE
     GMSHPARSERCPP_BUILD_TESTS
 )
 
-FetchContent_Declare(
-    cxxopts
-    GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
-    GIT_TAG        v3.1.1
-)
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
     FETCHCONTENT_UPDATES_DISCONNECTED_GMSHPARSERCPP
-    CXXOPTS_BUILD_EXAMPLES
-    CXXOPTS_BUILD_TESTS
-    CXXOPTS_ENABLE_INSTALL
-    CXXOPTS_ENABLE_WARNINGS
-    CXXOPTS_USE_UNICODE_HELP
 )
 
 FetchContent_Declare(
@@ -87,7 +77,7 @@ else()
     FetchContent_MakeAvailable(gmshparsercpp)
 endif()
 
-FetchContent_MakeAvailable(cxxopts googletest)
+FetchContent_MakeAvailable(googletest)
 
 mark_as_advanced(FORCE
     FETCHCONTENT_BASE_DIR

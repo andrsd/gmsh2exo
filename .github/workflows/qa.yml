@@ -19,3 +19,4 @@ jobs:
       with:
         clang-format-version: '14'
         check-path: .
+        exclude-regex: './contrib/'
