@@ -15,7 +15,7 @@ include(FetchContent)
 
 option(GMSH2EXO_BUILD_TESTS "Build tests" NO)
 
-find_package(fmt REQUIRED)
+find_package(fmt 9.1 REQUIRED)
 
 FetchContent_Declare(
     exodusIIcpp
