@@ -1,0 +1,60 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+          - os: macos-11
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: 3.9
+          auto-update-conda: false
+          channels: andrsd,conda-forge,defaults
+          channel-priority: strict
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+          use-mamba: true
+
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          mamba install \
+            cmake \
+            make \
+            flex \
+            cxx-compiler \
+            python \
+            libnetcdf==4.8.1 \
+            exodusii==2022.08.01 \
+            hdf5==1.12.2 \
+            fmt==9.1.0
+
+      - name: Configure
+        run: |
+          cmake -S . -B ${{ github.workspace }}/build \
+            -DEXODUSIICPP_LIBRARY_TYPE=STATIC \
+            -DGMSHPARSERCPP_LIBRARY_TYPE=STATIC \
+            -DGMSH2EXO_BUILD_TESTS=NO
+
+      - name: Build
+        run: make -C ${{ github.workspace }}/build

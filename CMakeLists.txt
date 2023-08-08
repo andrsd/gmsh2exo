@@ -15,12 +15,12 @@ include(FetchContent)
 
 option(GMSH2EXO_BUILD_TESTS "Build tests" NO)
 
-find_package(fmt REQUIRED)
+find_package(fmt 9.1 REQUIRED)
 
 FetchContent_Declare(
     exodusIIcpp
     GIT_REPOSITORY https://github.com/andrsd/exodusIIcpp.git
-    GIT_TAG        v1.5
+    GIT_TAG        v1.6
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_EXODUSIICPP
@@ -40,21 +40,6 @@ mark_as_advanced(FORCE
 )
 
 FetchContent_Declare(
-    cxxopts
-    GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
-    GIT_TAG        v3.1.1
-)
-mark_as_advanced(FORCE
-    FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
-    FETCHCONTENT_UPDATES_DISCONNECTED_GMSHPARSERCPP
-    CXXOPTS_BUILD_EXAMPLES
-    CXXOPTS_BUILD_TESTS
-    CXXOPTS_ENABLE_INSTALL
-    CXXOPTS_ENABLE_WARNINGS
-    CXXOPTS_USE_UNICODE_HELP
-)
-
-FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
     GIT_TAG        release-1.11.0
@@ -71,7 +56,7 @@ if(EXODUSIICPP_LIBRARY_TYPE STREQUAL "STATIC")
     FetchContent_GetProperties(exodusIIcpp)
     if(NOT exodusIIcpp_POPULATED)
         FetchContent_Populate(exodusIIcpp)
-        add_subdirectory(${exodusIIcpp_SOURCE_DIR} ${exodusIIcpp_BINARY_DIR} EXCLUDE_FROM_ALL)
+        add_subdirectory(${exodusiicpp_SOURCE_DIR} ${exodusiicpp_BINARY_DIR} EXCLUDE_FROM_ALL)
     endif()
 else()
     FetchContent_MakeAvailable(exodusIIcpp)
@@ -87,7 +72,9 @@ else()
     FetchContent_MakeAvailable(gmshparsercpp)
 endif()
 
-FetchContent_MakeAvailable(cxxopts googletest)
+if (GMSH2EXO_BUILD_TESTS)
+    FetchContent_MakeAvailable(googletest)
+endif()
 
 mark_as_advanced(FORCE
     FETCHCONTENT_BASE_DIR
