@@ -77,7 +77,9 @@ else()
     FetchContent_MakeAvailable(gmshparsercpp)
 endif()
 
-FetchContent_MakeAvailable(googletest)
+if (GMSH2EXO_BUILD_TESTS)
+    FetchContent_MakeAvailable(googletest)
+endif()
 
 mark_as_advanced(FORCE
     FETCHCONTENT_BASE_DIR
