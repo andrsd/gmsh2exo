@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(gmsh2exo
-    VERSION 0.5
+    VERSION 0.6
     LANGUAGES CXX
 )
 
