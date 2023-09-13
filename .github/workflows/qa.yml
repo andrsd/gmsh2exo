@@ -9,14 +9,21 @@ on:
       - main
 
 jobs:
-  formatting-check:
-    name: Check formatting
+  cpp-linter:
+    name: c++ linter
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Clang-format style check
-      uses: jidicula/clang-format-action@v4.3.0
-      with:
-        clang-format-version: '14'
-        check-path: .
-        exclude-regex: './contrib/'
+      - uses: actions/checkout@v3
+
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        with:
+          style: file
+          version: 14
+          lines-changed-only: true
+          ignore: 'contrib'
+          step-summary: true
+
+      - name: Result
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
