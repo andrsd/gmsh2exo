@@ -142,7 +142,9 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
         const auto & ent = ents_by_id[eb->tag];
         if (!ent->physical_tags.empty()) {
             auto id = ent->physical_tags[0];
-            exo_eb.set_name(phys_ent_by_tag[id]->name);
+            auto it = phys_ent_by_tag.find(id);
+            if (it != phys_ent_by_tag.end())
+                exo_eb.set_name(it->second->name);
             exo_eb.set_id(id);
         }
         else
@@ -225,7 +227,9 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
             for (const auto & id : ent.physical_tags) {
                 exodusIIcpp::SideSet ss;
                 ss.set_id(id);
-                ss.set_name(phys_ent_by_tag[id]->name);
+                auto it = phys_ent_by_tag.find(id);
+                if (it != phys_ent_by_tag.end())
+                    ss.set_name(it->second->name);
                 side_sets[id] = ss;
             }
         }
