@@ -11,7 +11,10 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 include(FetchContent)
+include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 
 option(GMSH2EXO_BUILD_TESTS "Build tests" NO)
 
@@ -73,7 +76,8 @@ else()
 endif()
 
 if (GMSH2EXO_BUILD_TESTS)
-    FetchContent_MakeAvailable(googletest)
+    enable_testing()
+    add_subdirectory(test)
 endif()
 
 mark_as_advanced(FORCE
