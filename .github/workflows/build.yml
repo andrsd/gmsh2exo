@@ -45,14 +45,46 @@ jobs:
             cxx-compiler \
             python \
             exodusii==2022.08.01 \
-            fmt==9.1.0
+            fmt==9.1.0 \
+            lcov
 
       - name: Configure
         run: |
           cmake -S . -B ${{ github.workspace }}/build \
             -DEXODUSIICPP_LIBRARY_TYPE=STATIC \
             -DGMSHPARSERCPP_LIBRARY_TYPE=STATIC \
-            -DGMSH2EXO_BUILD_TESTS=NO
+            -DGMSH2EXO_BUILD_TESTS=YES \
+            -DGMSH2EXO_CODE_COVERAGE=YES
 
       - name: Build
         run: make -C ${{ github.workspace }}/build
+
+      - name: Run tests
+        run: |
+          echo "### Test results" >> $GITHUB_STEP_SUMMARY
+          ctest --test-dir ${{ github.workspace }}/build -O test.log
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          awk 's;/^\[HANDLER_OUTPUT\]/{s=1}' test.log >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate code coverage
+        run: make -C ${{ github.workspace }}/build coverage
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.os }}
+          path: ${{ github.workspace }}/build/coverage.info
+
+  upload-to-codecov:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
