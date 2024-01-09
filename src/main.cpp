@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include "gmshparsercpp.h"
 #include "exodusIIcpp.h"
@@ -417,28 +416,25 @@ main(int argc, char * argv[])
     cxxopts::ParseResult result;
     try {
         result = options.parse(argc, argv);
-    }
-    catch (const cxxopts::exceptions::exception & e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        std::cout << options.help();
-        return 1;
-    }
-
-    if (result.count("version"))
-        std::cout << "gmsh2exo version " << GMSH2EXO_VERSION << std::endl;
-    else if (result.count("help"))
-        std::cout << options.help();
-    else if (result.count("gmsh_file") && result.count("exo2_file")) {
-        try {
+        if (result.count("version")) {
+            fmt::print(stdout, "gmsh2exo version {}\n", GMSH2EXO_VERSION);
+        }
+        else if (result.count("gmsh_file") && result.count("exo2_file")) {
             convert(result["gmsh_file"].as<std::string>(), result["exo2_file"].as<std::string>());
         }
-        catch (std::exception & e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-            return 1;
+        else {
+            fmt::print(stdout, options.help());
         }
     }
-    else
-        std::cout << options.help();
+    catch (const cxxopts::exceptions::exception & e) {
+        fmt::print(stderr, "Error: {}\n", e.what());
+        fmt::print(stdout, options.help());
+        return 1;
+    }
+    catch (std::exception & e) {
+        fmt::print(stderr, "Error: {}\n", e.what());
+        return 1;
+    }
 
     return 0;
 }
