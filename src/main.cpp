@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include "gmshparsercpp.h"
 #include "exodusIIcpp.h"
@@ -419,26 +418,26 @@ main(int argc, char * argv[])
         result = options.parse(argc, argv);
     }
     catch (const cxxopts::exceptions::exception & e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        std::cout << options.help();
+        fmt::print(stderr, "Error: {}\n", e.what());
+        fmt::print(stdout, options.help());
         return 1;
     }
 
     if (result.count("version"))
-        std::cout << "gmsh2exo version " << GMSH2EXO_VERSION << std::endl;
+        fmt::print(stdout, "gmsh2exo version {}\n", GMSH2EXO_VERSION);
     else if (result.count("help"))
-        std::cout << options.help();
+        fmt::print(stdout, options.help());
     else if (result.count("gmsh_file") && result.count("exo2_file")) {
         try {
             convert(result["gmsh_file"].as<std::string>(), result["exo2_file"].as<std::string>());
         }
         catch (std::exception & e) {
-            std::cerr << "Error: " << e.what() << std::endl;
+            fmt::print(stderr, "Error: {}\n", e.what());
             return 1;
         }
     }
     else
-        std::cout << options.help();
+        fmt::print(stdout, options.help());
 
     return 0;
 }
