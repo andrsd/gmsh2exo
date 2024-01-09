@@ -28,6 +28,25 @@ std::map<int, exodusIIcpp::NodeSet> node_sets;
 // NOTE: this may be needed per block
 std::map<int, int> elem_map;
 
+struct BoundingBox {
+    double xmin;
+    double xmax;
+    double ymin;
+    double ymax;
+    double zmin;
+    double zmax;
+
+    BoundingBox() :
+        xmin(std::numeric_limits<double>::max()),
+        xmax(std::numeric_limits<double>::lowest()),
+        ymin(std::numeric_limits<double>::max()),
+        ymax(std::numeric_limits<double>::lowest()),
+        zmin(std::numeric_limits<double>::max()),
+        zmax(std::numeric_limits<double>::lowest())
+    {
+    }
+};
+
 namespace gmsh {
 enum ElementType { EDGE2 = 1, TRI3 = 2, QUAD4 = 3, TET4 = 4, HEX8 = 5 };
 }
@@ -92,18 +111,46 @@ read_physical_entities(const std::vector<gmshparsercpp::MshFile::PhysicalName> &
     }
 }
 
-void
-analyze_mesh(const std::vector<gmshparsercpp::MshFile::ElementBlock> & el_blks)
+BoundingBox
+compute_mesh_bounding_box()
 {
-    el_blk_dim.resize(4);
-    for (const auto & eb : el_blks)
-        el_blk_dim[eb.dimension].push_back(&eb);
+    // this assumes that `x`, `y` and `z` contain valid coordinate data
+    BoundingBox bbox;
+    if ((x.size() == y.size()) and (y.size() == z.size())) {
+        auto n_nodes = x.size();
+        for (std::size_t i = 0; i < n_nodes; i++) {
+            bbox.xmin = std::min(bbox.xmin, x[i]);
+            bbox.xmax = std::max(bbox.xmax, x[i]);
+            bbox.ymin = std::min(bbox.ymin, y[i]);
+            bbox.ymax = std::max(bbox.ymax, y[i]);
+            bbox.zmin = std::min(bbox.zmin, z[i]);
+            bbox.zmax = std::max(bbox.zmax, z[i]);
+        }
+        return bbox;
+    }
+    else
+        throw std::logic_error(
+            fmt::format("Size of x ({}) must equal to size of y({}) and size of z({}).",
+                        x.size(),
+                        y.size(),
+                        z.size()));
+}
 
-    // the element block with the highest dimension that has something in it will be the final mesh
-    // dimension
-    for (int i = 0; i < 4; i++)
-        if (!el_blk_dim[i].empty())
-            dim = i;
+void
+analyze_mesh()
+{
+    auto bbox = compute_mesh_bounding_box();
+    double x_width = bbox.xmax - bbox.xmin;
+    double y_width = bbox.ymax - bbox.ymin;
+    double z_width = bbox.zmax - bbox.zmin;
+
+    if ((std::fabs(x_width) > 0) && (std::fabs(y_width) < 1e-16) && (std::fabs(z_width) < 1e-16))
+        dim = 1;
+    else if ((std::fabs(x_width) > 0) && (std::fabs(y_width) > 0) && (std::fabs(z_width) < 1e-16))
+        dim = 2;
+    else
+        dim = 3;
+
     side_set_dim = dim - 1;
     node_set_dim = 0;
 }
@@ -125,6 +172,14 @@ build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> & nodes)
             }
         }
     }
+}
+
+void
+build_element_block_dim(const std::vector<gmshparsercpp::MshFile::ElementBlock> & el_blks)
+{
+    el_blk_dim.resize(4);
+    for (const auto & eb : el_blks)
+        el_blk_dim[eb.dimension].push_back(&eb);
 }
 
 void
@@ -278,9 +333,10 @@ read_gmsh_file(const std::string & file_name)
     read_physical_entities(phys_entities);
 
     const std::vector<gmshparsercpp::MshFile::Node> & nodes = f.get_nodes();
-    const std::vector<gmshparsercpp::MshFile::ElementBlock> & el_blks = f.get_element_blocks();
-    analyze_mesh(el_blks);
     build_coordinates(nodes);
+    const std::vector<gmshparsercpp::MshFile::ElementBlock> & el_blks = f.get_element_blocks();
+    analyze_mesh();
+    build_element_block_dim(el_blks);
 
     const std::vector<gmshparsercpp::MshFile::MultiDEntity> * ents = nullptr;
     switch (dim) {
