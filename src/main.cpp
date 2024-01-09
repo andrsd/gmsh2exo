@@ -4,6 +4,7 @@
 #include "exodusIIcpp.h"
 #include "cxxopts.hpp"
 #include "Gmsh2ExoConfig.h"
+#include "fmt/format.h"
 
 /// Mesh dimension
 int dim = -1;
@@ -294,7 +295,7 @@ read_gmsh_file(const std::string & file_name)
         ents = &f.get_volume_entities();
         break;
     default:
-        throw std::runtime_error("Unsupported dimension.");
+        throw std::runtime_error(fmt::format("Unsupported spatial dimension {}.", dim));
     }
     build_element_blocks(el_blk_dim[dim], *ents);
 
@@ -307,7 +308,7 @@ read_gmsh_file(const std::string & file_name)
         sideset_ents = &f.get_surface_entities();
         break;
     default:
-        throw std::runtime_error("Unsupported side sets dim.");
+        throw std::runtime_error(fmt::format("Unsupported side set dimension {}.", side_set_dim));
     }
     build_side_sets(el_blk_dim[side_set_dim], *sideset_ents);
 }
