@@ -427,8 +427,15 @@ main(int argc, char * argv[])
         std::cout << "gmsh2exo version " << GMSH2EXO_VERSION << std::endl;
     else if (result.count("help"))
         std::cout << options.help();
-    else if (result.count("gmsh_file") && result.count("exo2_file"))
-        convert(result["gmsh_file"].as<std::string>(), result["exo2_file"].as<std::string>());
+    else if (result.count("gmsh_file") && result.count("exo2_file")) {
+        try {
+            convert(result["gmsh_file"].as<std::string>(), result["exo2_file"].as<std::string>());
+        }
+        catch (std::exception & e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            return 1;
+        }
+    }
     else
         std::cout << options.help();
 

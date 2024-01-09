@@ -40,7 +40,7 @@ if(GMSH2EXO_CODE_COVERAGE)
         )
 
         set(CODE_COVERAGE_BINS
-            --object=${PROJECT_BINARY_DIR}/src/gmsh2exo
+            --object=${PROJECT_BINARY_DIR}/gmsh2exo
         )
 
         set(MERGED_PROFDATA ${PROJECT_BINARY_DIR}/all-merged.profdata)
