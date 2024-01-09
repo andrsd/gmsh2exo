@@ -155,6 +155,22 @@ analyze_mesh()
     node_set_dim = 0;
 }
 
+const std::vector<gmshparsercpp::MshFile::MultiDEntity> *
+get_entities_by_dim(const gmshparsercpp::MshFile & f, int dim)
+{
+    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * ents = nullptr;
+    switch (dim) {
+    case 1:
+        return &f.get_curve_entities();
+    case 2:
+        return &f.get_surface_entities();
+    case 3:
+        return &f.get_volume_entities();
+    default:
+        throw std::runtime_error(fmt::format("Unsupported spatial dimension {}.", dim));
+    }
+}
+
 void
 build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> & nodes)
 {
@@ -338,33 +354,10 @@ read_gmsh_file(const std::string & file_name)
     analyze_mesh();
     build_element_block_dim(el_blks);
 
-    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * ents = nullptr;
-    switch (dim) {
-    case 1:
-        ents = &f.get_curve_entities();
-        break;
-    case 2:
-        ents = &f.get_surface_entities();
-        break;
-    case 3:
-        ents = &f.get_volume_entities();
-        break;
-    default:
-        throw std::runtime_error(fmt::format("Unsupported spatial dimension {}.", dim));
-    }
+    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * ents = get_entities_by_dim(f, dim);
     build_element_blocks(el_blk_dim[dim], *ents);
 
-    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * sideset_ents = nullptr;
-    switch (side_set_dim) {
-    case 1:
-        sideset_ents = &f.get_curve_entities();
-        break;
-    case 2:
-        sideset_ents = &f.get_surface_entities();
-        break;
-    default:
-        throw std::runtime_error(fmt::format("Unsupported side set dimension {}.", side_set_dim));
-    }
+    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * sideset_ents = get_entities_by_dim(f, side_set_dim);
     build_side_sets(el_blk_dim[side_set_dim], *sideset_ents);
 }
 
