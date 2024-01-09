@@ -8,9 +8,6 @@ project(gmsh2exo
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include(FetchContent)
@@ -88,6 +85,26 @@ mark_as_advanced(FORCE
 )
 
 #
-configure_file(include/Gmsh2ExoConfig.h.in Gmsh2ExoConfig.h)
+file(GLOB SRCS CONFIGURE_DEPENDS src/*.cpp)
+add_executable(${PROJECT_NAME} ${SRCS})
+target_code_coverage(${PROJECT_NAME})
 
-add_subdirectory(src)
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        ${PROJECT_BINARY_DIR}
+        ${CMAKE_SOURCE_DIR}/contrib/cxxopts
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        exodusIIcpp
+        gmshparsercpp
+)
+
+install(
+    TARGETS gmsh2exo
+    RUNTIME DESTINATION bin
+)
+
+#
+configure_file(include/Gmsh2ExoConfig.h.in Gmsh2ExoConfig.h)
