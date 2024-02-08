@@ -221,23 +221,34 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
     for (const auto & ent : entities)
         ents_by_id[ent.tag] = &ent;
 
+    std::map<int, std::string> exo_names;
+    std::map<int, std::vector<int>> exo_connects;
+    std::map<int, gmshparsercpp::ElementType> eltype;
+    std::map<int, int> num_elems;
+
     unsigned int eid = 0;
     for (const auto & eb : el_blks) {
-        exodusIIcpp::ElementBlock exo_eb;
-
         const auto & ent = ents_by_id[eb->tag];
+        int id;
         if (!ent->physical_tags.empty()) {
             // the sign on physical tag ID refers to orientation which we don't need
-            auto id = std::abs(ent->physical_tags[0]);
+            id = std::abs(ent->physical_tags[0]);
             auto it = phys_ent_by_tag.find(id);
             if (it != phys_ent_by_tag.end())
-                exo_eb.set_name(it->second->name);
-            exo_eb.set_id(id);
+                exo_names[id] = it->second->name;
         }
         else
-            exo_eb.set_id(eb->tag);
+            id = eb->tag;
 
-        std::vector<int> connect;
+        if (eltype.find(id) == eltype.end())
+            eltype[id] = eb->element_type;
+        else if (eltype[id] != eb->element_type) {
+            fmt::print("{} {} | {}\n", eltype[id], eb->element_type, gmshparsercpp::NONE);
+            throw std::runtime_error(
+                fmt::format("Unable to combine different element types in a single block"));
+        }
+
+        std::vector<int> & connect = exo_connects[id];
         for (const auto & elem : eb->elements) {
             std::vector<int> el_nodes;
             auto n_node_tags = elem.node_tags.size();
@@ -297,12 +308,21 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
             }
             eid++;
         }
-        int n_nodes_pre_elem = nodes_per_elem[eb->element_type];
-        exo_eb.set_connectivity(exo_elem_type.at(eb->element_type),
-                                (int) eb->elements.size(),
-                                n_nodes_pre_elem,
-                                connect);
-        element_blocks.push_back(exo_eb);
+
+        num_elems[id] += (int) eb->elements.size();
+    }
+
+    for (auto const & [id, connect] : exo_connects) {
+        exodusIIcpp::ElementBlock eb;
+
+        eb.set_name(exo_names[id]);
+        eb.set_id(id);
+        auto elem_type = eltype[id];
+        eb.set_connectivity(exo_elem_type.at(elem_type),
+                            num_elems[id],
+                            nodes_per_elem[elem_type],
+                            connect);
+        element_blocks.push_back(eb);
     }
 }
 
