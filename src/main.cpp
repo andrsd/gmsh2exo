@@ -357,7 +357,8 @@ read_gmsh_file(const std::string & file_name)
     const std::vector<gmshparsercpp::MshFile::MultiDEntity> * ents = get_entities_by_dim(f, dim);
     build_element_blocks(el_blk_dim[dim], *ents);
 
-    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * sideset_ents = get_entities_by_dim(f, side_set_dim);
+    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * sideset_ents =
+        get_entities_by_dim(f, side_set_dim);
     build_side_sets(el_blk_dim[side_set_dim], *sideset_ents);
 }
 

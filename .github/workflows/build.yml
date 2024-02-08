@@ -19,7 +19,6 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-          - os: macos-11
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up miniconda
@@ -27,24 +26,22 @@ jobs:
         with:
           python-version: 3.9
           auto-update-conda: false
-          channels: andrsd,conda-forge,defaults
+          channels: andrsd,main
           channel-priority: strict
-          miniforge-version: latest
-          miniforge-variant: Mambaforge
-          use-mamba: true
 
       - name: Checkout source
         uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
-          mamba install \
+          conda install \
             cmake \
             make \
             flex \
-            cxx-compiler \
+            mpich \
+            mpich-mpicxx \
             python \
-            exodusii==2022.08.01 \
+            exodusii=2022.08.01 \
             fmt==9.1.0 \
             lcov
 
