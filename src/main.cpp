@@ -1,5 +1,5 @@
 #include <string>
-#include "gmshparsercpp.h"
+#include "gmshparsercpp/MshFile.h"
 #include "exodusIIcpp.h"
 #include "cxxopts.hpp"
 #include "Gmsh2ExoConfig.h"
@@ -47,23 +47,19 @@ struct BoundingBox {
     }
 };
 
-namespace gmsh {
-enum ElementType { EDGE2 = 1, TRI3 = 2, QUAD4 = 3, TET4 = 4, HEX8 = 5 };
-}
-
 /// GMSH elem type to exodusII string type representation
-std::map<int, const char *> exo_elem_type = { { gmsh::EDGE2, "EDGE2" },
-                                              { gmsh::TRI3, "TRI3" },
-                                              { gmsh::QUAD4, "QUAD4" },
-                                              { gmsh::TET4, "TET4" },
-                                              { gmsh::HEX8, "HEX8" } };
+std::map<int, const char *> exo_elem_type = { { gmshparsercpp::LINE2, "EDGE2" },
+                                              { gmshparsercpp::TRI3, "TRI3" },
+                                              { gmshparsercpp::QUAD4, "QUAD4" },
+                                              { gmshparsercpp::TET4, "TET4" },
+                                              { gmshparsercpp::HEX8, "HEX8" } };
 
 /// GMSH elem type to number of nodes per that element type
-std::map<int, int> nodes_per_elem = { { gmsh::EDGE2, 2 },
-                                      { gmsh::TRI3, 3 },
-                                      { gmsh::QUAD4, 4 },
-                                      { gmsh::TET4, 4 },
-                                      { gmsh::HEX8, 8 } };
+std::map<int, int> nodes_per_elem = { { gmshparsercpp::LINE2, 2 },
+                                      { gmshparsercpp::TRI3, 3 },
+                                      { gmshparsercpp::QUAD4, 4 },
+                                      { gmshparsercpp::TET4, 4 },
+                                      { gmshparsercpp::HEX8, 8 } };
 
 // node ordering from GMSH to exodusII
 std::vector<std::vector<int>> node_order = {
@@ -248,7 +244,7 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
                 // Note: see Sjaardema, G. D., Schoof, L. A. & Yarberry, V. R. EXODUS: A Finite
                 // Element Data Model. 148 (2019) for how sides are numbered on different elements
                 // (fig 4.15, pp. 28)
-                if (eb->element_type == gmsh::TET4) {
+                if (eb->element_type == gmshparsercpp::TET4) {
                     std::vector<std::vector<int>> sides = { { 0, 1, 3 },
                                                             { 1, 2, 3 },
                                                             { 0, 2, 3 },
@@ -261,7 +257,7 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
                         elem_sides[side_key] = std::pair(eid + 1, s + 1);
                     }
                 }
-                else if (eb->element_type == gmsh::HEX8) {
+                else if (eb->element_type == gmshparsercpp::HEX8) {
                     std::vector<std::vector<int>> sides = { { 0, 1, 5, 4 }, { 1, 2, 6, 5 },
                                                             { 3, 2, 6, 7 }, { 0, 3, 7, 4 },
                                                             { 0, 1, 2, 3 }, { 4, 5, 6, 7 } };
@@ -316,19 +312,21 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
             for (const auto & elem : eb->elements) {
                 std::vector<int> side_key;
                 switch (eb->element_type) {
-                case gmsh::EDGE2:
+                case gmshparsercpp::LINE2:
                     side_key = build_side_key_edge2(elem.node_tags[0], elem.node_tags[1]);
                     break;
-                case gmsh::TRI3:
+                case gmshparsercpp::TRI3:
                     side_key = build_side_key_tri3(elem.node_tags[0],
                                                    elem.node_tags[1],
                                                    elem.node_tags[2]);
                     break;
-                case gmsh::QUAD4:
+                case gmshparsercpp::QUAD4:
                     side_key = build_side_key_quad4(elem.node_tags[0],
                                                     elem.node_tags[1],
                                                     elem.node_tags[2],
                                                     elem.node_tags[3]);
+                    break;
+                default:
                     break;
                 }
                 const auto el_side_pair = elem_sides[side_key];
