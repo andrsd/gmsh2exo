@@ -31,7 +31,7 @@ mark_as_advanced(FORCE
 FetchContent_Declare(
     gmshparsercpp
     GIT_REPOSITORY https://github.com/andrsd/gmshparsercpp.git
-    GIT_TAG        v1.2
+    GIT_TAG        v1.3
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
