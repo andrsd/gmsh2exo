@@ -4,6 +4,7 @@
 #include "cxxopts.hpp"
 #include "Gmsh2ExoConfig.h"
 #include "fmt/format.h"
+#include <array>
 
 /// Mesh dimension
 int dim = -1;
@@ -168,6 +169,24 @@ get_entities_by_dim(const gmshparsercpp::MshFile & f, int dim)
 }
 
 void
+correct_tri3_orientation(std::vector<int> & el_nodes)
+{
+    std::array<double, 2> pt1 = { x[el_nodes[0] - 1], y[el_nodes[0] - 1] };
+    std::array<double, 2> pt2 = { x[el_nodes[1] - 1], y[el_nodes[1] - 1] };
+    std::array<double, 2> pt3 = { x[el_nodes[2] - 1], y[el_nodes[2] - 1] };
+
+    std::array<double, 3> vec1 = { pt2[0] - pt1[0], pt2[1] - pt1[1] };
+    std::array<double, 3> vec2 = { pt3[0] - pt1[0], pt3[1] - pt1[1] };
+
+    double n = vec1[0] * vec2[1] - vec1[1] * vec2[0];
+    if (n < 0) {
+        // this should never happen, since gmsh claims to produce CCW oriented triangles, but it
+        // does *sigh* so, reorient the triangle...
+        std::swap(el_nodes[1], el_nodes[2]);
+    }
+}
+
+void
 build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> & nodes)
 {
     for (const auto & nd : nodes) {
@@ -226,6 +245,8 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
                 const auto & nid = elem.node_tags[node_order[eb->element_type][i]];
                 el_nodes.push_back(nid);
             }
+            if (eb->element_type == gmshparsercpp::TRI3)
+                correct_tri3_orientation(el_nodes);
             connect.insert(connect.end(), el_nodes.begin(), el_nodes.end());
 
             if (dim == 1) {
