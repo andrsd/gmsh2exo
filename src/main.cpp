@@ -208,7 +208,8 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
 
         const auto & ent = ents_by_id[eb->tag];
         if (!ent->physical_tags.empty()) {
-            auto id = ent->physical_tags[0];
+            // the sign on physical tag ID refers to orientation which we don't need
+            auto id = std::abs(ent->physical_tags[0]);
             auto it = phys_ent_by_tag.find(id);
             if (it != phys_ent_by_tag.end())
                 exo_eb.set_name(it->second->name);
@@ -291,8 +292,10 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
     std::map<int, const gmshparsercpp::MshFile::MultiDEntity *> ents_by_id;
     for (const auto & ent : entities) {
         if (!ent.physical_tags.empty()) {
-            for (const auto & id : ent.physical_tags) {
+            for (const auto & tag : ent.physical_tags) {
                 exodusIIcpp::SideSet ss;
+                // the sign on physical tag ID refers to orientation which we don't need
+                auto id = std::abs(tag);
                 ss.set_id(id);
                 auto it = phys_ent_by_tag.find(id);
                 if (it != phys_ent_by_tag.end())
@@ -306,7 +309,9 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
     for (const auto & eb : el_blks) {
         const auto & ent = ents_by_id[eb->tag];
 
-        for (const auto & id : ent->physical_tags) {
+        for (const auto & tag : ent->physical_tags) {
+            // the sign on physical tag ID refers to orientation which we don't need
+            auto id = std::abs(tag);
             auto & ss = side_sets[id];
 
             for (const auto & elem : eb->elements) {
