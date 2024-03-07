@@ -1,9 +1,12 @@
-#include <string>
+// SPDX-FileCopyrightText: 2023 (c) David Andrs <andrsd@gmail.com>
+// SPDX-License-Identifier: MIT
+
 #include "gmshparsercpp/MshFile.h"
 #include "exodusIIcpp.h"
 #include "cxxopts.hpp"
 #include "Gmsh2ExoConfig.h"
 #include "fmt/format.h"
+#include <string>
 #include <array>
 
 /// Mesh dimension
