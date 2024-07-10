@@ -20,7 +20,7 @@ find_package(fmt 9.1 REQUIRED)
 FetchContent_Declare(
     exodusIIcpp
     GIT_REPOSITORY https://github.com/andrsd/exodusIIcpp.git
-    GIT_TAG        v1.9
+    GIT_TAG        5255519eb56270fbbd8733ce3be960f9467d5677
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_EXODUSIICPP
@@ -31,7 +31,7 @@ mark_as_advanced(FORCE
 FetchContent_Declare(
     gmshparsercpp
     GIT_REPOSITORY https://github.com/andrsd/gmshparsercpp.git
-    GIT_TAG        v1.3
+    GIT_TAG        v1.4
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
