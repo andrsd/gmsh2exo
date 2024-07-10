@@ -11,10 +11,11 @@ Convert gmsh mesh files into exodusII files.
 
 ## Features
 
-- Converts individual "blocks" respecting physical entities assignment
-- Generates side sets from DIM-1 physical entities
-- Simple command line interface
+- Conversion:
+  - 3D: physical volumes are converted to blocks, physical surfaces are converted into side sets
+  - 2D: physical surfaces are converted into blocks, physical curves are converted into side sets
 - Support for first-order elements: LINE2, TRI3, QUAD4, TET4 and HEX8
+- Simple command line interface
 
 ## Requirements
 
