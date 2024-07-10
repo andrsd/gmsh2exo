@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "gmshparsercpp/MshFile.h"
-#include "exodusIIcpp.h"
+#include "exodusIIcpp/exodusIIcpp.h"
 #include "cxxopts.hpp"
 #include "Gmsh2ExoConfig.h"
 #include "fmt/format.h"
