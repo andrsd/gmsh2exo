@@ -4,7 +4,6 @@
 #include "gmshparsercpp/MshFile.h"
 #include "exodusIIcpp/exodusIIcpp.h"
 #include "cxxopts.hpp"
-#include "Gmsh2ExoConfig.h"
 #include "fmt/format.h"
 #include <string>
 #include <array>
