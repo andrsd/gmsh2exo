@@ -89,6 +89,11 @@ file(GLOB SRCS CONFIGURE_DEPENDS src/*.cpp)
 add_executable(${PROJECT_NAME} ${SRCS})
 target_code_coverage(${PROJECT_NAME})
 
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+        -DGMSH2EXO_VERSION="${CMAKE_PROJECT_VERSION}"
+)
+
 target_include_directories(${PROJECT_NAME}
     PRIVATE
         ${PROJECT_BINARY_DIR}
@@ -106,6 +111,3 @@ install(
     TARGETS gmsh2exo
     RUNTIME DESTINATION bin
 )
-
-#
-configure_file(include/Gmsh2ExoConfig.h.in Gmsh2ExoConfig.h)
