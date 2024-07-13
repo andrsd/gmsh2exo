@@ -15,6 +15,7 @@ Convert gmsh mesh files into exodusII files.
   - 3D: physical volumes are converted to blocks, physical surfaces are converted into side sets
   - 2D: physical surfaces are converted into blocks, physical curves are converted into side sets
 - Support for first-order elements: LINE2, TRI3, QUAD4, TET4 and HEX8
+- Support for MSH files version 2 and 4, both ASCII and binary
 - Simple command line interface
 
 ## Requirements
