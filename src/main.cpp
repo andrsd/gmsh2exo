@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2023 (c) David Andrs <andrsd@gmail.com>
 // SPDX-License-Identifier: MIT
 
+// References:
+// [1] Sjaardema, G. D., Schoof, L. A. & Yarberry, V. R. EXODUS: A Finite Element Data Model. 148
+// (2019)
+
 #include "gmshparsercpp/Enums.h"
 #include "gmshparsercpp/MshFile.h"
 #include "exodusIIcpp/exodusIIcpp.h"
@@ -11,11 +15,16 @@
 
 /// Mesh dimension
 int dim = -1;
+/// Side set dimension
 int side_set_dim = -1;
+/// Node set dimension
 int node_set_dim = -1;
 
+/// x-coordinates
 std::vector<double> x;
+/// y-coordinates
 std::vector<double> y;
+/// z-coordinates
 std::vector<double> z;
 
 std::map<int, int> node_map;
@@ -23,15 +32,20 @@ std::map<int, int> node_map;
 std::vector<std::vector<const gmshparsercpp::MshFile::ElementBlock *>> el_blk_dim;
 // (node_ids) -> (elem, side)
 std::map<std::vector<int>, std::pair<int, int>> elem_sides;
+/// Map from physical entity tag to physical entity
 std::map<int, const gmshparsercpp::MshFile::PhysicalName *> phys_ent_by_tag;
 
+/// Element blocks to be written to exodusII file
 std::vector<exodusIIcpp::ElementBlock> element_blocks;
+/// Side sets to be written to exodusII file
 std::map<int, exodusIIcpp::SideSet> side_sets;
+/// Node sets to be written to exodusII file
 std::map<int, exodusIIcpp::NodeSet> node_sets;
 
 // NOTE: this may be needed per block
 std::map<int, int> elem_map;
 
+/// Bounding box
 struct BoundingBox {
     double xmin;
     double xmax;
@@ -72,6 +86,11 @@ std::vector<std::vector<int>> node_order = {
 
 //
 
+/// Build a side set key for EDGE2 elements
+///
+/// @param id1 First node id
+/// @param id2 Second node id
+/// @return Side set key
 std::vector<int>
 build_side_key_edge2(int id1, int id2)
 {
@@ -87,6 +106,12 @@ build_side_key_edge2(int id1, int id2)
     return key;
 }
 
+/// Build a side set key for a TRI3 element
+///
+/// @param id1 First node id
+/// @param id2 Second node id
+/// @param id3 Third node id
+/// @return Side set key
 std::vector<int>
 build_side_key_tri3(int id1, int id2, int id3)
 {
@@ -95,6 +120,13 @@ build_side_key_tri3(int id1, int id2, int id3)
     return key;
 }
 
+/// Build a side set key for a QUAD4 element
+///
+/// @param id1 First node id
+/// @param id2 Second node id
+/// @param id3 Third node id
+/// @param id4 Fourth node id
+/// @return Side set key
 std::vector<int>
 build_side_key_quad4(int id1, int id2, int id3, int id4)
 {
@@ -103,6 +135,11 @@ build_side_key_quad4(int id1, int id2, int id3, int id4)
     return key;
 }
 
+/// Build a physical entity to tag map
+///
+/// This function builds a map from physical entity tag to physical entity
+///
+/// @param phys_entities Physical entities
 void
 read_physical_entities(const std::vector<gmshparsercpp::MshFile::PhysicalName> & phys_entities)
 {
@@ -111,6 +148,11 @@ read_physical_entities(const std::vector<gmshparsercpp::MshFile::PhysicalName> &
     }
 }
 
+/// Compute mesh bounding box
+///
+/// This function computes the bounding box of the mesh
+///
+/// @return Mesh bounding box
 BoundingBox
 compute_mesh_bounding_box()
 {
@@ -136,6 +178,11 @@ compute_mesh_bounding_box()
                         z.size()));
 }
 
+/// Analyze mesh
+///
+/// This function analyzes the mesh and determines the dimension of the mesh
+/// (1D, 2D or 3D) and the dimension of the side sets (dim - 1) and the dimension
+/// of the node sets (0).
 void
 analyze_mesh()
 {
@@ -155,6 +202,13 @@ analyze_mesh()
     node_set_dim = 0;
 }
 
+/// Get physical entities with a given dimension
+///
+/// This function returns the physical entities with a given dimension
+///
+/// @param f GMSH file
+/// @param dim Spatial dimension of the physical entities
+/// @return Physical entities with the given dimension
 const std::vector<gmshparsercpp::MshFile::MultiDEntity> &
 get_entities_by_dim(const gmshparsercpp::MshFile & f, int dim)
 {
@@ -170,6 +224,14 @@ get_entities_by_dim(const gmshparsercpp::MshFile & f, int dim)
     }
 }
 
+/// Correct the orientation of a triangle element
+///
+/// This function corrects the orientation of a triangle element by
+/// ensuring that the cross product of the two vectors formed by the
+/// edges of the triangle is positive. If the cross product is negative,
+/// the order of the nodes is reversed.
+///
+/// @param el_nodes The nodes of the triangle element
 void
 correct_tri3_orientation(std::vector<int> & el_nodes)
 {
@@ -188,6 +250,12 @@ correct_tri3_orientation(std::vector<int> & el_nodes)
     }
 }
 
+/// Build coordinates for the exodus file
+///
+/// This function builds the coordinates for the exodus file. It also builds the node map, which
+/// maps the local node id to the GMSH node id.
+///
+/// @param nodes The nodes from the GMSH file
 void
 build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> & nodes)
 {
@@ -207,6 +275,12 @@ build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> & nodes)
     }
 }
 
+/// Build element block by dimension
+///
+/// This function builds the element blocks by dimension. It fills the `el_blk_dim` vector with the
+/// element blocks based on their dimension.
+///
+/// @param el_blks The element blocks from the GMSH file
 void
 build_element_block_dim(const std::vector<gmshparsercpp::MshFile::ElementBlock> & el_blks)
 {
@@ -276,9 +350,7 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
                 }
             }
             else if (dim == 3) {
-                // Note: see Sjaardema, G. D., Schoof, L. A. & Yarberry, V. R. EXODUS: A Finite
-                // Element Data Model. 148 (2019) for how sides are numbered on different elements
-                // (fig 4.15, pp. 28)
+                // See [1] for how sides are numbered on different elements (fig 4.15, pp. 28)
                 if (eb->element_type == gmshparsercpp::TET4) {
                     std::vector<std::vector<int>> sides = { { 0, 1, 3 },
                                                             { 1, 2, 3 },
@@ -328,6 +400,10 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
     }
 }
 
+/// Build (0-D) side sets from the point entities
+///
+/// @param el_blks Element blocks
+/// @param entities Point entities
 void
 build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> & el_blks,
                 const std::vector<gmshparsercpp::MshFile::PointEntity> & entities)
@@ -366,6 +442,10 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
     }
 }
 
+/// Build (1-D, 2-D) side sets from the physoical entities
+///
+/// @param el_blks Element blocks
+/// @param entities Physical entities
 void
 build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> & el_blks,
                 const std::vector<gmshparsercpp::MshFile::MultiDEntity> & entities)
@@ -422,6 +502,9 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
     }
 }
 
+/// Read GMSH file
+///
+/// @param file_name GMSH file name
 void
 read_gmsh_file(const std::string & file_name)
 {
@@ -450,6 +533,9 @@ read_gmsh_file(const std::string & file_name)
     }
 }
 
+/// Write coordinates to ExodusII file
+///
+/// @param f ExodusII file
 void
 write_exodus_coordinates(exodusIIcpp::File & f)
 {
@@ -462,6 +548,9 @@ write_exodus_coordinates(exodusIIcpp::File & f)
     f.write_coord_names();
 }
 
+/// Write element blocks to ExodusII file
+///
+/// @param f ExodusII file
 void
 write_exodus_element_blocks(exodusIIcpp::File & f)
 {
@@ -476,6 +565,9 @@ write_exodus_element_blocks(exodusIIcpp::File & f)
     f.write_block_names(block_names);
 }
 
+/// Write side sets to ExodusII file
+///
+/// @param f ExodusII file
 void
 write_exodus_side_sets(exodusIIcpp::File & f)
 {
@@ -491,6 +583,9 @@ write_exodus_side_sets(exodusIIcpp::File & f)
         f.write_side_set_names(sideset_names);
 }
 
+/// Write node sets to ExodusII file
+///
+/// @param f ExodusII file
 void
 write_exodus_node_sets(exodusIIcpp::File & f)
 {
@@ -506,6 +601,9 @@ write_exodus_node_sets(exodusIIcpp::File & f)
         f.write_node_set_names(nodeset_names);
 }
 
+/// Write ExodusII file
+///
+/// @param file_name ExodusII file name
 void
 write_exodus_file(const std::string & file_name)
 {
@@ -528,6 +626,10 @@ write_exodus_file(const std::string & file_name)
     f.close();
 }
 
+/// Convert GMSH file to ExodusII file
+///
+/// @param input_file_name GMSH file name
+/// @param output_file_name ExodusII file name
 void
 convert(const std::string & input_file_name, const std::string & output_file_name)
 {
