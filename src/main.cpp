@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 (c) David Andrs <andrsd@gmail.com>
 // SPDX-License-Identifier: MIT
 
+#include "gmshparsercpp/Enums.h"
 #include "gmshparsercpp/MshFile.h"
 #include "exodusIIcpp/exodusIIcpp.h"
 #include "cxxopts.hpp"
@@ -154,17 +155,16 @@ analyze_mesh()
     node_set_dim = 0;
 }
 
-const std::vector<gmshparsercpp::MshFile::MultiDEntity> *
+const std::vector<gmshparsercpp::MshFile::MultiDEntity> &
 get_entities_by_dim(const gmshparsercpp::MshFile & f, int dim)
 {
-    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * ents = nullptr;
     switch (dim) {
     case 1:
-        return &f.get_curve_entities();
+        return f.get_curve_entities();
     case 2:
-        return &f.get_surface_entities();
+        return f.get_surface_entities();
     case 3:
-        return &f.get_volume_entities();
+        return f.get_volume_entities();
     default:
         throw std::runtime_error(fmt::format("Unsupported spatial dimension {}.", dim));
     }
@@ -330,6 +330,44 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
 
 void
 build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> & el_blks,
+                const std::vector<gmshparsercpp::MshFile::PointEntity> & entities)
+{
+    std::map<int, const gmshparsercpp::MshFile::PointEntity *> ents_by_id;
+    for (const auto & ent : entities) {
+        if (!ent.physical_tags.empty()) {
+            for (const auto & tag : ent.physical_tags) {
+                exodusIIcpp::SideSet ss;
+                // the sign on physical tag ID refers to orientation which we don't need
+                auto id = std::abs(tag);
+                ss.set_id(id);
+                auto it = phys_ent_by_tag.find(id);
+                if (it != phys_ent_by_tag.end())
+                    ss.set_name(it->second->name);
+                side_sets[id] = ss;
+            }
+        }
+        ents_by_id[ent.tag] = &ent;
+    }
+
+    for (const auto & eb : el_blks) {
+        const auto & ent = ents_by_id[eb->tag];
+        for (const auto & tag : ent->physical_tags) {
+            // the sign on physical tag ID refers to orientation which we don't need
+            auto id = std::abs(tag);
+            auto & ss = side_sets[id];
+            for (const auto & elem : eb->elements) {
+                if (eb->element_type == gmshparsercpp::POINT) {
+                    std::vector<int> side_key = { elem.node_tags[0] };
+                    const auto el_side_pair = elem_sides[side_key];
+                    ss.add(el_side_pair.first, el_side_pair.second);
+                }
+            }
+        }
+    }
+}
+
+void
+build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> & el_blks,
                 const std::vector<gmshparsercpp::MshFile::MultiDEntity> & entities)
 {
     std::map<int, const gmshparsercpp::MshFile::MultiDEntity *> ents_by_id;
@@ -390,22 +428,26 @@ read_gmsh_file(const std::string & file_name)
     gmshparsercpp::MshFile f(file_name);
     f.parse();
 
-    const std::vector<gmshparsercpp::MshFile::PhysicalName> & phys_entities =
-        f.get_physical_names();
+    const auto & phys_entities = f.get_physical_names();
     read_physical_entities(phys_entities);
 
-    const std::vector<gmshparsercpp::MshFile::Node> & nodes = f.get_nodes();
+    const auto & nodes = f.get_nodes();
     build_coordinates(nodes);
-    const std::vector<gmshparsercpp::MshFile::ElementBlock> & el_blks = f.get_element_blocks();
+    const auto & el_blks = f.get_element_blocks();
     analyze_mesh();
     build_element_block_dim(el_blks);
 
-    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * ents = get_entities_by_dim(f, dim);
-    build_element_blocks(el_blk_dim[dim], *ents);
+    const auto & ents = get_entities_by_dim(f, dim);
+    build_element_blocks(el_blk_dim[dim], ents);
 
-    const std::vector<gmshparsercpp::MshFile::MultiDEntity> * sideset_ents =
-        get_entities_by_dim(f, side_set_dim);
-    build_side_sets(el_blk_dim[side_set_dim], *sideset_ents);
+    if (side_set_dim == 0) {
+        const auto & sideset_ents = f.get_point_entities();
+        build_side_sets(el_blk_dim[side_set_dim], sideset_ents);
+    }
+    else {
+        const auto & sideset_ents = get_entities_by_dim(f, side_set_dim);
+        build_side_sets(el_blk_dim[side_set_dim], sideset_ents);
+    }
 }
 
 void
