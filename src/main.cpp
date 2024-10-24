@@ -459,7 +459,6 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
                 exodusIIcpp::SideSet ss;
                 // the sign on physical tag ID refers to orientation which we don't need
                 auto id = std::abs(tag);
-                ss.set_id(id);
                 auto it = phys_ent_by_tag.find(id);
                 if (it != phys_ent_by_tag.end())
                     ss.set_name(it->second->name);
@@ -470,36 +469,40 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
     }
 
     for (const auto & eb : el_blks) {
-        const auto & ent = ents_by_id[eb->tag];
+        int id;
+        if (ents_by_id.count(eb->tag) > 0) {
+            const auto * ent = ents_by_id[eb->tag];
+            if (ent->physical_tags.size() > 0)
+                id = std::abs(ent->physical_tags[0]);
+            else
+                id = eb->tag;
+        }
+        else
+            id = eb->tag;
 
-        for (const auto & tag : ent->physical_tags) {
-            // the sign on physical tag ID refers to orientation which we don't need
-            auto id = std::abs(tag);
-            auto & ss = side_sets[id];
-
-            for (const auto & elem : eb->elements) {
-                std::vector<int> side_key;
-                switch (eb->element_type) {
-                case gmshparsercpp::LINE2:
-                    side_key = build_side_key_edge2(elem.node_tags[0], elem.node_tags[1]);
-                    break;
-                case gmshparsercpp::TRI3:
-                    side_key = build_side_key_tri3(elem.node_tags[0],
-                                                   elem.node_tags[1],
-                                                   elem.node_tags[2]);
-                    break;
-                case gmshparsercpp::QUAD4:
-                    side_key = build_side_key_quad4(elem.node_tags[0],
-                                                    elem.node_tags[1],
-                                                    elem.node_tags[2],
-                                                    elem.node_tags[3]);
-                    break;
-                default:
-                    break;
-                }
-                const auto el_side_pair = elem_sides[side_key];
-                ss.add(el_side_pair.first, el_side_pair.second);
+        auto & ss = side_sets[id];
+        ss.set_id(id);
+        for (const auto & elem : eb->elements) {
+            std::vector<int> side_key;
+            switch (eb->element_type) {
+            case gmshparsercpp::LINE2:
+                side_key = build_side_key_edge2(elem.node_tags[0], elem.node_tags[1]);
+                break;
+            case gmshparsercpp::TRI3:
+                side_key =
+                    build_side_key_tri3(elem.node_tags[0], elem.node_tags[1], elem.node_tags[2]);
+                break;
+            case gmshparsercpp::QUAD4:
+                side_key = build_side_key_quad4(elem.node_tags[0],
+                                                elem.node_tags[1],
+                                                elem.node_tags[2],
+                                                elem.node_tags[3]);
+                break;
+            default:
+                break;
             }
+            const auto el_side_pair = elem_sides[side_key];
+            ss.add(el_side_pair.first, el_side_pair.second);
         }
     }
 }
