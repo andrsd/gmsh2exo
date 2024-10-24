@@ -304,9 +304,11 @@ build_element_blocks(const std::vector<const gmshparsercpp::MshFile::ElementBloc
 
     unsigned int eid = 0;
     for (const auto & eb : el_blks) {
-        const auto & ent = ents_by_id[eb->tag];
+        const auto * ent = ents_by_id[eb->tag];
         int id;
-        if (!ent->physical_tags.empty()) {
+        if (ent == nullptr)
+            id = eb->tag;
+        else if (!ent->physical_tags.empty()) {
             // the sign on physical tag ID refers to orientation which we don't need
             id = std::abs(ent->physical_tags[0]);
             auto it = phys_ent_by_tag.find(id);
