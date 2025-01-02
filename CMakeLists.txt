@@ -20,7 +20,7 @@ find_package(fmt 9.1 REQUIRED)
 FetchContent_Declare(
     exodusIIcpp
     GIT_REPOSITORY https://github.com/andrsd/exodusIIcpp.git
-    GIT_TAG        v2.0.2
+    GIT_TAG        b4172a0999e7393d629e8d52872512e3e4368a89
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_EXODUSIICPP
@@ -31,7 +31,7 @@ mark_as_advanced(FORCE
 FetchContent_Declare(
     gmshparsercpp
     GIT_REPOSITORY https://github.com/andrsd/gmshparsercpp.git
-    GIT_TAG        1ffa75169df6febd1c4db9949f54c91d862f5ce0
+    GIT_TAG        7ed3ae3d8c251e79cee6de21ba73e83f4ac45759
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
@@ -42,7 +42,7 @@ mark_as_advanced(FORCE
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.11.0
+    GIT_TAG        v1.15.2
 )
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 mark_as_advanced(FORCE
