@@ -45,3 +45,17 @@ set_tests_properties(
     PROPERTIES
         ENVIRONMENT LLVM_PROFILE_FILE=cube-2x2x2-test.profraw
 )
+
+# disc
+add_test_exodiff(
+    NAME   disc
+    BIN    gmsh2exo
+    INPUT  ${GMSH2EXO_ASSETS_DIR}/disc.msh
+    OUTPUT ${PROJECT_BINARY_DIR}/disc.exo
+    GOLD   ${GMSH2EXO_GOLD_DIR}/disc.exo
+)
+set_tests_properties(
+    disc
+    PROPERTIES
+        ENVIRONMENT LLVM_PROFILE_FILE=disc-test.profraw
+)
