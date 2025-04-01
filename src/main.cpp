@@ -26,7 +26,7 @@ std::vector<double> x;
 std::vector<double> y;
 /// z-coordinates
 std::vector<double> z;
-
+// Map from GMSH node id to node id (i.e. index into coordinates, but not 1-based exodusII index)
 std::map<int, int> node_map;
 /// Blocks per dimension
 std::vector<std::vector<const gmshparsercpp::MshFile::ElementBlock *>> el_blk_dim;
@@ -253,7 +253,7 @@ correct_tri3_orientation(std::vector<int> & el_nodes)
 /// Build coordinates for the exodus file
 ///
 /// This function builds the coordinates for the exodus file. It also builds the node map, which
-/// maps the local node id to the GMSH node id.
+/// maps the GMSH node id to internal node id.
 ///
 /// @param nodes The nodes from the GMSH file
 void
@@ -262,9 +262,9 @@ build_coordinates(const std::vector<gmshparsercpp::MshFile::Node> & nodes)
     for (const auto & nd : nodes) {
         if (!nd.tags.empty()) {
             for (int j = 0; j < nd.tags.size(); j++) {
-                int local_id = (int) node_map.size();
+                auto local_id = (int) node_map.size();
                 const auto & id = nd.tags[j];
-                node_map[local_id] = id;
+                node_map[id] = local_id;
 
                 const auto & c = nd.coordinates[j];
                 x.push_back(c.x);
@@ -444,7 +444,7 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
     }
 }
 
-/// Build (1-D, 2-D) side sets from the physoical entities
+/// Build (1-D, 2-D) side sets from the physical entities
 ///
 /// @param el_blks Element blocks
 /// @param entities Physical entities
@@ -507,6 +507,47 @@ build_side_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> 
     }
 }
 
+///
+void
+build_node_sets(const std::vector<const gmshparsercpp::MshFile::ElementBlock *> & el_blks,
+                const std::vector<gmshparsercpp::MshFile::PointEntity> & entities)
+{
+    std::map<int, const gmshparsercpp::MshFile::PointEntity *> ents_by_id;
+    for (const auto & ent : entities) {
+        if (!ent.physical_tags.empty()) {
+            for (const auto & tag : ent.physical_tags) {
+                exodusIIcpp::NodeSet ns;
+                // the sign on physical tag ID refers to orientation which we don't need
+                auto id = std::abs(tag);
+                ns.set_id(id);
+                auto it = phys_ent_by_tag.find(id);
+                if (it != phys_ent_by_tag.end())
+                    ns.set_name(it->second->name);
+                node_sets[id] = ns;
+            }
+        }
+        ents_by_id[ent.tag] = &ent;
+    }
+
+    for (const auto & eb : el_blks) {
+        const auto & ent = ents_by_id[eb->tag];
+        for (const auto & tag : ent->physical_tags) {
+            std::vector<int> nodes;
+            for (const auto & elem : eb->elements) {
+                if (eb->element_type == gmshparsercpp::POINT) {
+                    auto node_key = elem.node_tags[0];
+                    auto node_id = node_map[node_key];
+                    nodes.push_back(node_id + 1);
+                }
+            }
+
+            // the sign on physical tag ID refers to orientation which we don't need
+            auto id = std::abs(tag);
+            node_sets[id].set_nodes(nodes);
+        }
+    }
+}
+
 /// Read GMSH file
 ///
 /// @param file_name GMSH file name
@@ -536,6 +577,9 @@ read_gmsh_file(const std::string & file_name)
         const auto & sideset_ents = get_entities_by_dim(f, side_set_dim);
         build_side_sets(el_blk_dim[side_set_dim], sideset_ents);
     }
+
+    const auto & nodeset_ents = f.get_point_entities();
+    build_node_sets(el_blk_dim[node_set_dim], nodeset_ents);
 }
 
 /// Write coordinates to ExodusII file
