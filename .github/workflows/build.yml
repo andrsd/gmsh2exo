@@ -49,6 +49,7 @@ jobs:
       - name: Configure
         run: |
           cmake -S . -B ${{ github.workspace }}/build \
+            -DGCOV_PATH=`which x86_64-conda-linux-gnu-gcov` \
             -DEXODUSIICPP_LIBRARY_TYPE=STATIC \
             -DGMSHPARSERCPP_LIBRARY_TYPE=STATIC \
             -DGMSH2EXO_BUILD_TESTS=YES \
