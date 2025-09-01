@@ -15,12 +15,12 @@ include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 
 option(GMSH2EXO_BUILD_TESTS "Build tests" NO)
 
-find_package(fmt 9.1 REQUIRED)
+find_package(fmt 11 REQUIRED)
 
 FetchContent_Declare(
     exodusIIcpp
     GIT_REPOSITORY https://github.com/andrsd/exodusIIcpp.git
-    GIT_TAG        b4172a0999e7393d629e8d52872512e3e4368a89
+    GIT_TAG        v3.0.0
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_EXODUSIICPP
@@ -31,7 +31,7 @@ mark_as_advanced(FORCE
 FetchContent_Declare(
     gmshparsercpp
     GIT_REPOSITORY https://github.com/andrsd/gmshparsercpp.git
-    GIT_TAG        7ed3ae3d8c251e79cee6de21ba73e83f4ac45759
+    GIT_TAG        v2.0.0
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP

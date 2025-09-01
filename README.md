@@ -22,9 +22,9 @@ Convert gmsh mesh files into exodusII files.
 ## Requirements
 
 - C++17 compiler
-- [fmt 9.1](https://github.com/fmtlib/fmt)
-- [exodusIIcpp](https://github.com/andrsd/exodusIIcpp)
-- [gmshparsercpp](https://github.com/andrsd/gmshparsercpp)
+- [fmt](https://github.com/fmtlib/fmt) 11.x
+- [exodusIIcpp](https://github.com/andrsd/exodusIIcpp) 3.x
+- [gmshparsercpp](https://github.com/andrsd/gmshparsercpp) 2.x
 
 NOTE: `exodusIIcpp` has additional requirements like netCDF4, HDF5 and exodusii from SEACAS.
 
