@@ -20,7 +20,7 @@ find_package(fmt 11 REQUIRED)
 FetchContent_Declare(
     exodusIIcpp
     GIT_REPOSITORY https://github.com/andrsd/exodusIIcpp.git
-    GIT_TAG        v3.0.0
+    GIT_TAG        6cfaf02310ad42eed999da16849efb0b57c51863
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_EXODUSIICPP
@@ -31,7 +31,7 @@ mark_as_advanced(FORCE
 FetchContent_Declare(
     gmshparsercpp
     GIT_REPOSITORY https://github.com/andrsd/gmshparsercpp.git
-    GIT_TAG        v2.0.0
+    GIT_TAG        c2a1a12e4d5c8dae36ac3e93269532838accd342
 )
 mark_as_advanced(FORCE
     FETCHCONTENT_SOURCE_DIR_GMSHPARSERCPP
@@ -52,6 +52,8 @@ mark_as_advanced(FORCE
     FETCHCONTENT_UPDATES_DISCONNECTED_GOOGLETEST
 )
 
+set(EXODUSIICPP_INSTALL OFF CACHE BOOL "Disable install for exodusIIcpp" FORCE)
+set(GMSHPARSERCPP_INSTALL OFF CACHE BOOL "Disable install for gmshparsercpp" FORCE)
 FetchContent_MakeAvailable(exodusIIcpp)
 FetchContent_MakeAvailable(gmshparsercpp)
 
