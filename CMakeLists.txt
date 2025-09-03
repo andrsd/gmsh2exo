@@ -52,7 +52,10 @@ mark_as_advanced(FORCE
     FETCHCONTENT_UPDATES_DISCONNECTED_GOOGLETEST
 )
 
+set(EXODUSIICPP_LIBRARY_TYPE "STATIC" CACHE BOOL "Build static lib" FORCE)
+set(EXODUSIICPP_BUILD_TOOLS OFF CACHE BOOL "Don't build exodusIIcpp tools" FORCE)
 set(EXODUSIICPP_INSTALL OFF CACHE BOOL "Disable install for exodusIIcpp" FORCE)
+set(GMSHPARSERCPP_LIBRARY_TYPE "STATIC" CACHE BOOL "Build static lib" FORCE)
 set(GMSHPARSERCPP_INSTALL OFF CACHE BOOL "Disable install for gmshparsercpp" FORCE)
 FetchContent_MakeAvailable(exodusIIcpp)
 FetchContent_MakeAvailable(gmshparsercpp)
