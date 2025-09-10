@@ -81,7 +81,7 @@ std::map<int, int> nodes_per_elem = { { gmshparsercpp::LINE2, 2 },
 
 // node ordering from GMSH to exodusII
 std::vector<std::vector<int>> node_order = {
-    {}, { 0, 1 }, { 0, 1, 2 }, { 0, 1, 2, 3 }, { 2, 1, 0, 3 }, { 0, 1, 2, 3, 4, 5, 6, 7 }
+    {}, { 0, 1 }, { 0, 1, 2 }, { 0, 1, 2, 3 }, { 0, 1, 2, 3 }, { 0, 1, 2, 3, 4, 5, 6, 7 }
 };
 
 //
