@@ -27,7 +27,6 @@ jobs:
           python-version: 3.11
           auto-update-conda: false
           channels: andrsd,main
-          channel-priority: strict
 
       - name: Checkout source
         uses: actions/checkout@v4
@@ -38,11 +37,11 @@ jobs:
             cmake \
             make \
             flex \
-            cxx-compiler \
-            python \
-            exodusii=2024.06.* \
-            fmt=11.* \
-            yaml-cpp==0.8.0 \
+            mpich=4.3 \
+            mpich-mpicxx \
+            exodusii=2024.06 \
+            fmt=11 \
+            yaml-cpp==0.8 \
             lcov
 
       - name: Configure
