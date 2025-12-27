@@ -38,8 +38,7 @@ jobs:
             cmake \
             make \
             flex \
-            mpich \
-            mpich-mpicxx \
+            cxx-compiler \
             python \
             exodusii=2024.06.* \
             fmt=11.* \
