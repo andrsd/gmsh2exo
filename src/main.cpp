@@ -5,6 +5,7 @@
 // [1] Sjaardema, G. D., Schoof, L. A. & Yarberry, V. R. EXODUS: A Finite Element Data Model. 148
 // (2019)
 
+#include <cstdlib>
 #include "gmshparsercpp/Enums.h"
 #include "gmshparsercpp/MshFile.h"
 #include "exodusIIcpp/exodusIIcpp.h"
